@@ -1,0 +1,58 @@
+# Self-hosted MLflow (tracking + registry + artifact proxy) and the scoring API.
+#
+#   docker compose up -d
+#   MLFLOW_TRACKING_URI=http://localhost:5000 uv run mlops train
+#
+# Artifacts go through the MLflow server (--serve-artifacts), so clients only
+# need the tracking URL: no bucket credentials on laptops or CI.
+name: mlops
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlflow}
+      POSTGRES_DB: mlflow
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  mlflow:
+    build: { context: infra, dockerfile: mlflow.Dockerfile }
+    command: >
+      mlflow server
+      --host 0.0.0.0 --port 5000
+      --backend-store-uri postgresql+psycopg2://mlflow:${POSTGRES_PASSWORD:-mlflow}@postgres:5432/mlflow
+      --serve-artifacts --artifacts-destination /mlartifacts
+      --allowed-hosts ${MLFLOW_ALLOWED_HOSTS:-localhost:5000,localhost:${MLFLOW_PORT:-5000},mlflow:5000}
+      --workers 2
+    volumes: [artifacts:/mlartifacts]
+    ports: ["127.0.0.1:${MLFLOW_PORT:-5000}:5000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      retries: 30
+    restart: unless-stopped
+
+  scoring:
+    build: .
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_NAME: credit-risk
+      MODEL_POLL_SECONDS: "30"
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      mlflow: { condition: service_healthy }
+    restart: unless-stopped
+    profiles: [serve]   # start after a champion exists: docker compose --profile serve up -d
+
+volumes:
+  pgdata:
+  artifacts:
