@@ -81,6 +81,17 @@ def test_stages_come_in_order_and_match_the_model(models: dict[str, Any], applic
     width = prep.transform(frame).shape[1]
     assert stage["transform"]["shape"] == [1, width]
     assert sum(e["n_columns"] for e in stage["transform"]["encoding"]) + len(NUMERIC) == width
+    # active_index rebuilds exactly the one-hot vector the encoder produced (the site draws it).
+    ohe = prep.named_transformers_["cat"]
+    onehot = ohe.transform(frame[list(ohe.feature_names_in_)])
+    onehot = onehot.toarray() if hasattr(onehot, "toarray") else onehot
+    rebuilt: list[float] = []
+    for e in stage["transform"]["encoding"]:
+        cells = [0.0] * e["n_columns"]
+        if e["active_index"] is not None:
+            cells[e["active_index"]] = 1.0
+        rebuilt += cells
+    assert rebuilt == [float(v) for v in onehot[0]]
 
     scaler = prep.named_transformers_["num"]
     for i, row in enumerate(stage["normalize"]["rows"]):
@@ -88,6 +99,7 @@ def test_stages_come_in_order_and_match_the_model(models: dict[str, Any], applic
         assert row["after"] == pytest.approx((applicant[row["name"]] - scaler.mean_[i]) / scaler.scale_[i], abs=1e-3)
 
     assert stage["model"]["probability"] == pytest.approx(p, abs=1e-4)
+    assert stage["model"]["threshold"] == 0.5
     assert stage["model"]["trees"] == model.named_steps["clf"].n_iter_
     assert 1 / (1 + np.exp(-stage["model"]["log_odds"])) == pytest.approx(p, abs=1e-3)
     assert stage["fit"]["rows_train"] == 750 and 0.6 < stage["fit"]["holdout_auc"] < 0.95
@@ -130,6 +142,7 @@ def test_encoding_shows_infrequent_and_unseen_categories(models: dict[str, Any],
         "infrequent": False,
         "seen_in_training": True,
         "n_columns": 3,
+        "active_index": ["free", "own", "rent"].index(applicant["housing"]),
     }
     assert stage["model"]["estimator"] == "LogisticRegression" and "coefficients" in stage["model"]
 

@@ -236,6 +236,8 @@ def run(
                         "infrequent": label == "infrequent_sklearn",
                         "seen_in_training": value in set(map(str, ohe.categories_[i])),
                         "n_columns": len(own),
+                        # Position of the 1 among this field's columns, so the site can draw the vector.
+                        "active_index": next((k for k, j in enumerate(own) if onehot[j] == 1), None),
                     }
                 )
     yield (
@@ -304,6 +306,7 @@ def run(
             "id": "model",
             **info_model,
             "probability": _num(p, 4),
+            "threshold": threshold,
             "version": version,
             "ms": round((clock() - t) * 1000, 2),
         },
