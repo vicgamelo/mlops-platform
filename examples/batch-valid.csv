@@ -1,13 +1,13 @@
 id,duration,credit_amount,installment_commitment,residence_since,age,existing_credits,num_dependents,checking_status,credit_history,purpose,savings_status,employment,other_parties,property_magnitude,other_payment_plans,housing,job,own_telephone
-cliente-001,36,5711,4,2,38,2,1,no checking,critical/other existing credit,used car,>=1000,>=7,none,car,none,own,high qualif/self emp/mgmt,yes
-cliente-002,24,4110,3,4,23,2,2,<0,no credits/all paid,furniture/equipment,<100,>=7,none,no known property,bank,rent,skilled,none
-cliente-003,12,1402,3,4,37,1,1,no checking,critical/other existing credit,furniture/equipment,500<=X<1000,4<=X<7,none,car,none,rent,skilled,yes
-cliente-004,20,4272,1,4,24,2,1,<0,critical/other existing credit,furniture/equipment,<100,>=7,none,life insurance,none,own,skilled,none
-cliente-005,18,3104,3,1,31,1,1,<0,no credits/all paid,business,<100,4<=X<7,none,life insurance,bank,own,skilled,yes
-cliente-006,24,3235,3,2,26,1,1,no checking,existing paid,radio/tv,500<=X<1000,>=7,none,car,none,own,high qualif/self emp/mgmt,yes
-cliente-007,36,9629,4,4,24,2,1,<0,critical/other existing credit,used car,<100,4<=X<7,none,car,none,own,skilled,yes
-cliente-008,12,1318,4,4,54,1,1,0<=X<200,existing paid,new car,>=1000,>=7,none,real estate,none,own,skilled,yes
-cliente-009,24,3757,4,4,62,1,1,no checking,existing paid,new car,<100,>=7,co applicant,no known property,none,for free,skilled,yes
-cliente-010,15,950,4,3,33,2,2,<0,no credits/all paid,new car,<100,>=7,none,car,none,rent,skilled,none
-cliente-011,10,2069,2,1,26,2,1,no checking,critical/other existing credit,furniture/equipment,no known savings,1<=X<4,none,car,none,own,skilled,none
-cliente-012,48,4605,3,4,24,2,2,<0,no credits/all paid,used car,<100,>=7,none,no known property,none,for free,skilled,none
+cliente-001,36,55396.7,4,2,38,2,1,no checking,critical/other existing credit,used car,>=9700,>=7,none,car,none,own,high qualif/self emp/mgmt,yes
+cliente-002,24,39867,3,4,23,2,2,<0,no credits/all paid,furniture/equipment,<970,>=7,none,no known property,bank,rent,skilled,none
+cliente-003,12,13599.4,3,4,37,1,1,no checking,critical/other existing credit,furniture/equipment,4850<=X<9700,4<=X<7,none,car,none,rent,skilled,yes
+cliente-004,20,41438.4,1,4,24,2,1,<0,critical/other existing credit,furniture/equipment,<970,>=7,none,life insurance,none,own,skilled,none
+cliente-005,18,30108.8,3,1,31,1,1,<0,no credits/all paid,business,<970,4<=X<7,none,life insurance,bank,own,skilled,yes
+cliente-006,24,31379.5,3,2,26,1,1,no checking,existing paid,radio/tv,4850<=X<9700,>=7,none,car,none,own,high qualif/self emp/mgmt,yes
+cliente-007,36,93401.3,4,4,24,2,1,<0,critical/other existing credit,used car,<970,4<=X<7,none,car,none,own,skilled,yes
+cliente-008,12,12784.6,4,4,54,1,1,0<=X<1940,existing paid,new car,>=9700,>=7,none,real estate,none,own,skilled,yes
+cliente-009,24,36442.9,4,4,62,1,1,no checking,existing paid,new car,<970,>=7,co applicant,no known property,none,for free,skilled,yes
+cliente-010,15,9215,4,3,33,2,2,<0,no credits/all paid,new car,<970,>=7,none,car,none,rent,skilled,none
+cliente-011,10,20069.3,2,1,26,2,1,no checking,critical/other existing credit,furniture/equipment,no known savings,1<=X<4,none,car,none,own,skilled,none
+cliente-012,48,44668.5,3,4,24,2,2,<0,no credits/all paid,used car,<970,>=7,none,no known property,none,for free,skilled,none

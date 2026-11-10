@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
     os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
     os.environ.setdefault("MLFLOW_SUPPRESS_PRINTING_URL_TO_STDOUT", "true")  # keep stdout machine readable
     parser = argparse.ArgumentParser(prog="mlops")
-    parser.add_argument("--model-name", default=os.getenv("MODEL_NAME", "credit-risk"))
+    parser.add_argument("--model-name", default=os.getenv("MODEL_NAME", "credit-risk-brl"))
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     for name in ("train", "promote", "drift"):

@@ -31,11 +31,11 @@ logger = logging.getLogger("mlops_platform.serve")
 
 
 class Applicant(BaseModel):
-    checking_status: Literal["<0", "0<=X<200", ">=200", "no checking"]
+    checking_status: Literal["<0", "0<=X<1940", ">=1940", "no checking"]
     duration: Annotated[int, Field(ge=1, le=120)]
     credit_history: str
     purpose: str
-    credit_amount: Annotated[float, Field(gt=0, le=1_000_000)]
+    credit_amount: Annotated[float, Field(gt=0, le=10_000_000)]  # reais
     savings_status: str
     employment: str
     installment_commitment: Annotated[int, Field(ge=1, le=4)]
@@ -111,7 +111,7 @@ def sse(event: str, data: dict[str, Any]) -> str:
 
 
 def create_app(scorer: Scorer | None = None, poll_seconds: float | None = None) -> FastAPI:
-    scorer = scorer or Scorer(os.getenv("MODEL_NAME", "credit-risk"))
+    scorer = scorer or Scorer(os.getenv("MODEL_NAME", "credit-risk-brl"))
     poll = poll_seconds if poll_seconds is not None else float(os.getenv("MODEL_POLL_SECONDS", "30"))
     threshold = float(os.getenv("DECISION_THRESHOLD", "0.5"))
     limits = batch.Limits(

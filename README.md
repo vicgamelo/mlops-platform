@@ -52,7 +52,7 @@ flowchart LR
   categorical, unseen categories handled). `mlops drift` exits 1 on major drift, ready for cron.
 
 **Serving** (`serve.py`)
-- FastAPI with strict input validation, loads `models:/credit-risk@champion` and polls the
+- FastAPI with strict input validation, loads `models:/credit-risk-brl@champion` and polls the
   alias: promotions and rollbacks go live in seconds with an atomic swap.
 - `POST /admin/reload` forces a check; disabled unless `ADMIN_TOKEN` is set.
 - Inputs are checked against the credit-g domain (`schema.py`): a category the dataset doesn't have
@@ -78,6 +78,15 @@ needs (`TreePredictor` for gradient boosting), and only the training job writes 
 
 Data: Statlog (German Credit Data), Hofmann 1994, UCI Machine Learning Repository, CC BY 4.0. A copy
 (1000 rows, the features used here) ships in `src/mlops_platform/reference/` for the live pipeline.
+
+The data comes from a 1970s German bank, in Deutsche Marks. `data.to_reais` converts it to Brazilian
+reais before training, at R$ 9.70 per DM (purchasing power: €1 = DM 1.95583, German prices ×3.25 since
+1975, euro ≈ R$ 5.85): `credit_amount` is multiplied by the rate and the DM brackets of `checking_status`
+and `savings_status` become R$ brackets (`0<=X<200` → `0<=X<1940`, `>=1000` → `>=9700`). The model, the
+API and the examples are in reais. Scaling does not change what the model learns, so the metrics below
+are the same as the Deutsche Mark version; the registered model is `credit-risk-brl`, because its input
+contract differs from the old `credit-risk`. A request with an old DM bracket is refused and the
+message points to the reais one.
 
 | | ROC AUC | PR AUC | Brier |
 | --- | --- | --- | --- |

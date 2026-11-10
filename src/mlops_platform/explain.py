@@ -184,7 +184,7 @@ def run(
     version: str,
     prepared: Prepared,
     *,
-    model_name: str = "credit-risk",
+    model_name: str = "credit-risk-brl",
     threshold: float = 0.5,
     ref: Reference | None = None,
     live_fit: bool = True,

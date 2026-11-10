@@ -106,10 +106,10 @@ def train(
     df: pd.DataFrame,
     *,
     experiment: str = "credit-risk",
-    model_name: str = "credit-risk",
+    model_name: str = "credit-risk-brl",
     seed: int = 42,
     test_size: float = 0.25,
-    dataset_name: str = "credit-g",
+    dataset_name: str = "credit-g-brl",
 ) -> TrainResult:
     train_df, test_df = train_test_split(df, test_size=test_size, stratify=df[TARGET], random_state=seed)
     X_train, y_train = train_df[FEATURES], train_df[TARGET].to_numpy()

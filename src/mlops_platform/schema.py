@@ -1,8 +1,9 @@
 """Input contract of the credit model: the credit-g domain for each feature, plus checks that
 explain *what* is wrong with a value (wrong type, outside the domain, missing...) in PT and EN.
 
-The categories are the ones declared in OpenML ``credit-g`` (v1). Anything else is refused instead
-of being silently folded into the encoder's "infrequent" bucket.
+The categories are the ones declared in OpenML ``credit-g`` (v1), with the money brackets in reais
+(see ``data.to_reais``). Anything else is refused instead of being silently folded into the
+encoder's "infrequent" bucket.
 """
 
 from __future__ import annotations
@@ -13,12 +14,12 @@ import numbers
 from dataclasses import dataclass
 from typing import Literal
 
-from .data import CATEGORICAL, EXCLUDED, FEATURES, NUMERIC
+from .data import CATEGORICAL, EXCLUDED, FEATURES, MONEY_CATEGORIES, NUMERIC
 
 Lang = Literal["pt", "en"]
 
 DOMAIN: dict[str, tuple[str, ...]] = {
-    "checking_status": ("<0", "0<=X<200", ">=200", "no checking"),
+    "checking_status": ("<0", "0<=X<1940", ">=1940", "no checking"),
     "credit_history": (
         "no credits/all paid",
         "all paid",
@@ -38,7 +39,7 @@ DOMAIN: dict[str, tuple[str, ...]] = {
         "business",
         "other",
     ),
-    "savings_status": ("<100", "100<=X<500", "500<=X<1000", ">=1000", "no known savings"),
+    "savings_status": ("<970", "970<=X<4850", "4850<=X<9700", ">=9700", "no known savings"),
     "employment": ("unemployed", "<1", "1<=X<4", "4<=X<7", ">=7"),
     "other_parties": ("none", "co applicant", "guarantor"),
     "property_magnitude": ("real estate", "life insurance", "car", "no known property"),
@@ -57,11 +58,11 @@ class Bounds:
     min_exclusive: bool = False
 
 
-# Same bounds as the /predict API. The training data is narrower (see TRAIN_RANGE): values in between
-# are accepted with a warning, because the model has never seen them.
+# Same bounds as the /predict API (credit_amount in reais). The training data is narrower (see
+# TRAIN_RANGE): values in between are accepted with a warning, because the model has never seen them.
 BOUNDS: dict[str, Bounds] = {
     "duration": Bounds("int", 1, 120),
-    "credit_amount": Bounds("float", 0, 1_000_000, min_exclusive=True),
+    "credit_amount": Bounds("float", 0, 10_000_000, min_exclusive=True),
     "installment_commitment": Bounds("int", 1, 4),
     "residence_since": Bounds("int", 1, 4),
     "age": Bounds("int", 18, 100),
@@ -70,7 +71,7 @@ BOUNDS: dict[str, Bounds] = {
 }
 TRAIN_RANGE: dict[str, tuple[float, float]] = {
     "duration": (4, 72),
-    "credit_amount": (250, 18424),
+    "credit_amount": (2425, 178712.8),
     "installment_commitment": (1, 4),
     "residence_since": (1, 4),
     "age": (19, 75),
@@ -173,7 +174,9 @@ def check_value(column: str, raw: Value | None, lang: Lang = "pt") -> tuple[Valu
             return text, []
         close = difflib.get_close_matches(text.lower(), [d.lower() for d in DOMAIN[column]], n=1, cutoff=0.6)
         suggestion = ""
-        if close:
+        if text in MONEY_CATEGORIES.get(column, {}):  # the old DM bracket: point to the same one in reais
+            suggestion = SUGGESTION[lang].format(MONEY_CATEGORIES[column][text])
+        elif close:
             original = next(d for d in DOMAIN[column] if d.lower() == close[0])
             suggestion = SUGGESTION[lang].format(original)
         msg = message("out_of_domain", lang, got=text, suggestion=suggestion, allowed=", ".join(DOMAIN[column]))

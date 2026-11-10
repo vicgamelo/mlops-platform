@@ -75,7 +75,7 @@ def test_stages_come_in_order_and_match_the_model(models: dict[str, Any], applic
     p = float(model.predict_proba(frame)[0, 1])
 
     assert [f["name"] for f in stage["raw"]["fields"]] == FEATURES
-    assert stage["raw"]["model"] == {"name": "credit-risk", "alias": "champion", "version": "7"}
+    assert stage["raw"]["model"] == {"name": "credit-risk-brl", "alias": "champion", "version": "7"}
 
     prep = model.named_steps["prep"]
     width = prep.transform(frame).shape[1]

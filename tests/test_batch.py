@@ -12,7 +12,7 @@ EXAMPLES = Path(__file__).parent.parent / "examples"
 VALID = (EXAMPLES / "batch-valid.csv").read_bytes()
 ERRORS = (EXAMPLES / "batch-errors.csv").read_bytes()
 HEADER = ",".join(FEATURES)
-ROW = "36,5711,4,2,38,2,1,no checking,existing paid,used car,>=1000,>=7,none,car,none,own,skilled,yes"
+ROW = "36,55396.7,4,2,38,2,1,no checking,existing paid,used car,>=9700,>=7,none,car,none,own,skilled,yes"
 
 
 def csv_of(*rows: str, header: str = HEADER) -> bytes:
@@ -28,11 +28,11 @@ def cell_codes(body: bytes) -> set[tuple[int, str, str]]:
 
 
 class FakeModel:
-    """predict_proba = credit_amount / 10_000, so the test knows each row's score."""
+    """predict_proba = credit_amount / 100_000 (reais), so the test knows each row's score."""
 
     def predict_proba(self, frame):  # type: ignore[no-untyped-def]
         assert list(frame.columns) == FEATURES
-        p = np.clip(frame["credit_amount"].to_numpy(dtype=float) / 10_000, 0, 1)
+        p = np.clip(frame["credit_amount"].to_numpy(dtype=float) / 100_000, 0, 1)
         return np.column_stack([1 - p, p])
 
 
@@ -141,7 +141,7 @@ def test_scores_only_valid_rows_and_keeps_order() -> None:
     scored = [r for r in results if r["status"] == "scored"]
     assert len(scored) == 4 and all(r["errors"] == [] for r in scored)
     first = results[0]
-    assert first["default_probability"] == 0.5711 and first["decision"] == "review"
+    assert first["default_probability"] == 0.554 and first["decision"] == "review"
     invalid = next(r for r in results if r["line"] == 3)
     assert invalid["default_probability"] is None and invalid["errors"][0].startswith("age: ")
 
@@ -179,4 +179,4 @@ def test_output_csv_neutralizes_formulas_from_the_input() -> None:
             assert not cell.lstrip(" ").startswith(("=", "+", "-", "@", "\t", "\r")), cell
     assert rows[1][1] == "'=cmd|' /C calc'!A0"
     assert rows[2][1] == "'@x" and rows[2][6] == "'-38" and rows[2][2 + FEATURES.index("job")].startswith("'=HYPERLINK")
-    assert rows[1][-3:-1] == ["0.5711", "review"] and rows[2][-4] == "invalid"
+    assert rows[1][-3:-1] == ["0.5540", "review"] and rows[2][-4] == "invalid"
