@@ -55,12 +55,29 @@ flowchart LR
 - FastAPI with strict input validation, loads `models:/credit-risk@champion` and polls the
   alias: promotions and rollbacks go live in seconds with an atomic swap.
 - `POST /admin/reload` forces a check; disabled unless `ADMIN_TOKEN` is set.
+- Inputs are checked against the credit-g domain (`schema.py`): a category the dataset doesn't have
+  is a 422, not a silent "infrequent" bucket.
+
+**Live pipeline and batch** (`explain.py`, `batch.py`), used by the demo on vgmelo.tech
+- `POST /pipeline` streams (SSE) every step the champion runs on one applicant: raw fields, casts and
+  imputation (credit-g median/mode, shipped in the package because the container has no internet),
+  the champion's own one-hot encoding and `StandardScaler` (before / mean / std / after), a live fit of
+  the small logistic regression candidate (~15 ms, one at a time), inference, and the features that
+  moved the probability most (swap each one for the typical value and score again).
+- `POST /batch/validate` and `POST /batch/score` take a CSV (`text/csv`, `BATCH_MAX_BYTES` 50 KB,
+  `BATCH_MAX_ROWS` 250). Every problem is reported by line and column with how to fix it (wrong type,
+  outside the domain with the closest category, out of range, missing, decimal comma, protected or
+  unknown columns). Scoring keeps invalid rows in the output, and every cell written back is escaped
+  against spreadsheet formulas (`=`, `+`, `-`, `@`, tab, CR). See `examples/batch-*.csv`.
 
 **Security note:** MLflow 3 serializes sklearn models with skops and refuses to load types that
 a crafted file could abuse. Instead of disabling that, the pipeline trusts only the one type it
 needs (`TreePredictor` for gradient boosting), and only the training job writes to the registry.
 
 ## Results on German Credit (OpenML `credit-g`)
+
+Data: Statlog (German Credit Data), Hofmann 1994, UCI Machine Learning Repository, CC BY 4.0. A copy
+(1000 rows, the features used here) ships in `src/mlops_platform/reference/` for the live pipeline.
 
 | | ROC AUC | PR AUC | Brier |
 | --- | --- | --- | --- |
